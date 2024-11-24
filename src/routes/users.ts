@@ -27,4 +27,29 @@ router.post('/register', async function (req: Request, res: Response) {
     }
 });
 
+router.post('/login', async function (req: Request, res: Response) {
+    const data = req.body;
+    try {
+        if (!data.email || !data.password) {
+            res.status(401).send("All fields required");
+        } else {
+            const user = await User.findOne({ email: data.email });
+            if (user != null) {
+                bcrypt.compare(data.password, user.password, function (err, result) {
+                    if (result) {
+                        res.status(200).send(user);
+                    } else {
+                        res.status(401).send("The password don't match");
+                    }
+                });
+            } else {
+                res.status(401).send("The user w/ this email was not found");
+            }
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).send("Something went wrong w/ login")
+    }
+})
+
 export default router;
